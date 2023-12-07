@@ -1,6 +1,7 @@
 package main
 
 import (
+	"short-it/config"
 	"short-it/internal/logger"
 	"short-it/internal/routes"
 
@@ -11,5 +12,5 @@ func main () {
     logger.Info("Starting server...")
     app := fiber.New()
     routes.AddRoutes(app)
-    app.Listen(":8000")
+    app.Listen(":" + config.Get("PORT"))
 }
