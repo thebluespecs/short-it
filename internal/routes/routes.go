@@ -7,5 +7,5 @@ import (
 )
 
 func AddRoutes(app *fiber.App) {
-    app.Get("/", controller.Health)
+	app.Get("/", controller.Health)
 }

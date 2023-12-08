@@ -7,33 +7,33 @@ import (
 )
 
 type logger struct {
-    log *zap.Logger
+	log *zap.Logger
 }
 
 var (
-    instance *logger
-    one sync.Once
+	instance *logger
+	one      sync.Once
 )
 
 func getInstance() *logger {
-    one.Do(func() {
-        zapLogger, err := zap.NewProduction()
-        if err != nil {
-            panic("Failed to init logger: " + err.Error())
-        }
-        instance = &logger{log: zapLogger}
-    })
-    return instance
+	one.Do(func() {
+		zapLogger, err := zap.NewProduction()
+		if err != nil {
+			panic("Failed to init logger: " + err.Error())
+		}
+		instance = &logger{log: zapLogger}
+	})
+	return instance
 }
 
 func Info(msg string) {
-    getInstance().log.Info(msg)
+	getInstance().log.Info(msg)
 }
 
 func Error(msg string) {
-    getInstance().log.Error(msg)
+	getInstance().log.Error(msg)
 }
 
 func Debug(msg string) {
-    getInstance().log.Debug(msg)
+	getInstance().log.Debug(msg)
 }
