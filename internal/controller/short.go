@@ -12,7 +12,7 @@ type encodeInput struct {
 	Url string `json:"url"`
 }
 
-func Encode(c *fiber.Ctx) error {
+func Shorten(c *fiber.Ctx) error {
 	var input encodeInput
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -39,13 +39,14 @@ func Encode(c *fiber.Ctx) error {
 	})
 }
 
-func Decode(c *fiber.Ctx) error {
+func Info(c *fiber.Ctx) error {
 	// get short url from params
 	short_url := c.Params("short_url")
 	logger.Info("short url: " + short_url)
 	// decode the short url
 	url, err := short.Decode(short_url, mongo.GetInstance())
 	if err != nil {
+        logger.Error("cannot decode url in info")
 		return c.Status(500).JSON(fiber.Map{
 			"status":  "error",
 			"message": "cannot decode url",
@@ -56,4 +57,22 @@ func Decode(c *fiber.Ctx) error {
 		"status": "ok",
 		"data":   url,
 	})
+}
+
+func Redirect(c *fiber.Ctx) error {
+    // get short url from params
+    short_url := c.Params("short_url")
+    logger.Info("short url: " + short_url)
+    // decode the short url
+    url, err := short.Decode(short_url, mongo.GetInstance())
+    if err != nil {
+        logger.Error("cannot decode url in redirect")
+        return c.Status(500).JSON(fiber.Map{
+            "status":  "error",
+            "message": "cannot decode url",
+        })
+    }
+    // redirect to the original url
+    logger.Info("redirecting to: " + url)
+    return c.Redirect(url, 301)
 }

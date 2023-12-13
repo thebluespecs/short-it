@@ -9,6 +9,7 @@ import (
 func AddRoutes(app *fiber.App) {
 	app.Get("/", controller.Health)
 
-	app.Post("/encode", controller.Encode)
-	app.Get("/:short_url", controller.Decode)
+    app.Post("/shorten", controller.Shorten)
+    app.Get("/:short_url/info", controller.Info)
+    app.Get("/:short_url", controller.Redirect)
 }
