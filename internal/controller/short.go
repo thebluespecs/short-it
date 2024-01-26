@@ -28,6 +28,7 @@ func Shorten(c *fiber.Ctx) error {
     if input.ExpireAt == 0 {
         input.ExpireAt = 7 * 24 * time.Hour
     }
+    logger.Info("input: " + input.Url + " " + input.ExpireAt.String())
 	shortened_url, err := short.Encode(input.Url, input.ExpireAt, mongo.GetInstance())
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

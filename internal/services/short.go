@@ -11,6 +11,7 @@ import (
 func Encode (url string, expiresAt time.Duration, dataStore db.DB) (string, error) {
     id, err := dataStore.Save(url, expiresAt)
     if err != nil {
+        logger.Error("cannot save url " + err.Error())
         return "", err
     }
     return encode(uint64(id)), nil

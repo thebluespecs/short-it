@@ -1,6 +1,7 @@
 package mongo
 
 import (
+    "strconv"
 	"context"
 	"errors"
 	"short-it/config"
@@ -40,15 +41,10 @@ func GetInstance() *Mongo {
 }
 
 func (m *Mongo) Connect() error {
-    client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.Get("MONGO_URL")))
+    client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.Get("MONGO_URI")))
 	if err != nil {
 		panic(err)
 	}
-    defer func() {
-        if err = client.Disconnect(context.Background()); err != nil {
-            panic(err)
-        }
-    }()
     m.Client = client
     m.Collection = client.Database("short-it").Collection("urls")
     return nil
@@ -66,11 +62,11 @@ func (m *Mongo) Save(url string, expiresAt time.Duration) (int, error) {
     shortUrl := models.NewShortUrl(url, expiresAt)
     result, err := m.Collection.InsertOne(context.TODO(), shortUrl)
     if err != nil {
-        logger.Error(err.Error())
+        logger.Error("Error is Saving the URL info to mongo: " + err.Error())
         return 0, err
     }
-    logger.Info("inserted id: " + result.InsertedID.(string))
-    return int(result.InsertedID.(int64)), nil
+    logger.Info("inserted id: " + strconv.Itoa(int(result.InsertedID.(int32))))
+    return int(result.InsertedID.(int32)), nil
 }
 
 // Find finds the url from the database
