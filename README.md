@@ -12,13 +12,18 @@ git clone git@github.com:thebluespecs/short-it.git
 > [!note] building or running the server takes care of this in golang.
 
 ### server
-1. run on local
+1. Build, the server uses make as a build engine. This takes care of the dependencies of the project by itself.
 ```
-go run main.go
+make build
 ```
-2. build
+2. Running the server
 ```
-go build ./...
+make run 
+```
+3. Stop the process. While a simple `CTRL + c` should kill the process. The supporting container in the background
+would need the below command to stop
+```
+make stop
 ```
 
 ## Functionality and endpoints
