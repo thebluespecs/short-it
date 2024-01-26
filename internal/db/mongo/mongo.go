@@ -81,3 +81,13 @@ func (m *Mongo) Find(id int) (string, error) {
     }
     return url.Url, nil
 }
+
+func (m *Mongo) Update(id int, options map[string]interface{}) (string, error) {
+    var url models.ShortUrl
+    err := m.Collection.FindOneAndUpdate(context.TODO(), bson.M{ "_id": id, }, options).Decode(&url)
+    if err != nil {
+        logger.Error(err.Error())
+        return "", err
+    }
+    return url.Url, nil
+}

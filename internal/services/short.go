@@ -27,3 +27,20 @@ func Decode (code string, dataStore db.DB) (string, error) {
     }
     return url, nil
 }
+
+// redirect and update the visits
+func Redirect(code string, dataStore db.DB) (string, error) {
+    id := decode(code)
+    logger.Info("decoded id: " + strconv.Itoa(int(id)))
+    url, err := dataStore.Update(int(id), map[string]interface{}{
+        "$inc": map[string]int{
+            "visits": 1,
+        },
+    })
+    logger.Info("Redirection requested, incremented visits")
+    if err != nil {
+        logger.Error("cannot update visits " + err.Error())
+        return "", err
+    }
+    return url, nil
+}

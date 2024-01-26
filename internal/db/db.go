@@ -9,4 +9,5 @@ type DB interface {
     Disconnect() error
 	Save(url string, expiresAt time.Duration) (int, error)
 	Find(id int) (string, error)
+    Update(id int, options map[string]interface{}) (string, error)
 }
