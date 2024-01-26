@@ -1,8 +1,12 @@
 package db
 
+import "time"
+
 // db interface with save and find methods
 
 type DB interface {
-	Save(url string) (int, error)
+    Connect() error
+    Disconnect() error
+	Save(url string, expiresAt time.Duration) (int, error)
 	Find(id int) (string, error)
 }
