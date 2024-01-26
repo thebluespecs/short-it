@@ -73,7 +73,7 @@ func Redirect(c *fiber.Ctx) error {
     short_url := c.Params("short_url")
     logger.Info("short url: " + short_url)
     // decode the short url
-    url, err := short.Decode(short_url, mongo.GetInstance())
+    url, err := short.Redirect(short_url, mongo.GetInstance())
     if err != nil {
         logger.Error("cannot decode url in redirect")
         return c.Status(500).JSON(fiber.Map{
