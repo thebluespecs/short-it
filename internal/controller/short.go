@@ -1,6 +1,7 @@
 package controller
 
 import (
+    "time"
 	"short-it/internal/db/mongo"
 	"short-it/internal/logger"
 	short "short-it/internal/services"
@@ -10,17 +11,25 @@ import (
 
 type encodeInput struct {
 	Url string `json:"url"`
+    // ExpireAt is the duration after which the url will expire
+    // if not provided, it will expire after 7 days
+    ExpireAt time.Duration `json:"expireAt"`
 }
 
 func Shorten(c *fiber.Ctx) error {
 	var input encodeInput
 	if err := c.BodyParser(&input); err != nil {
+        logger.Error(err.Error())
 		return c.Status(400).JSON(fiber.Map{
 			"status":  "error",
 			"message": "cannot parse JSON",
 		})
 	}
-	shortened_url, err := short.Encode(input.Url, mongo.GetInstance())
+    if input.ExpireAt == 0 {
+        input.ExpireAt = 7 * 24 * time.Hour
+    }
+    logger.Info("input: " + input.Url + " " + input.ExpireAt.String())
+	shortened_url, err := short.Encode(input.Url, input.ExpireAt, mongo.GetInstance())
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"status":  "error",

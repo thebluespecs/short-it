@@ -1,16 +1,24 @@
 package mongo
 
 import (
+    "strconv"
+	"context"
 	"errors"
-	"math/rand"
+	"short-it/config"
+	"short-it/internal/db/mongo/models"
 	"short-it/internal/logger"
-	"strconv"
 	"sync"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Mongo is a struct that implements DB interface
 type Mongo struct {
-	m map[int]string
+    Client *mongo.Client
+    Collection *mongo.Collection
 }
 
 var (
@@ -20,7 +28,11 @@ var (
 
 func init() {
 	one.Do(func() {
-		instance = &Mongo{m: make(map[int]string)}
+        instance = &Mongo{
+            Client: nil,
+            Collection: nil,
+        }
+        instance.Connect()
 	})
 }
 
@@ -28,21 +40,44 @@ func GetInstance() *Mongo {
 	return instance
 }
 
-// Save saves the url to the database
-func (m *Mongo) Save(url string) (int, error) {
-	// generate a random int
-	id := rand.Intn(10000)
-	logger.Info("generated id: " + strconv.Itoa(id))
-	m.m[id] = url
-	return id, nil
+func (m *Mongo) Connect() error {
+    client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.Get("MONGO_URI")))
+	if err != nil {
+		panic(err)
+	}
+    m.Client = client
+    m.Collection = client.Database("short-it").Collection("urls")
+    return nil
+}
+
+func (m *Mongo) Disconnect() error {
+    if m.Client == nil {
+        return errors.New("client not initialized")
+    }
+    return m.Client.Disconnect(context.Background())
+}
+
+// Save function to save the url to the mongo database to the collection urls
+func (m *Mongo) Save(url string, expiresAt time.Duration) (int, error) {
+    shortUrl := models.NewShortUrl(url, expiresAt)
+    result, err := m.Collection.InsertOne(context.TODO(), shortUrl)
+    if err != nil {
+        logger.Error("Error is Saving the URL info to mongo: " + err.Error())
+        return 0, err
+    }
+    logger.Info("inserted id: " + strconv.Itoa(int(result.InsertedID.(int32))))
+    return int(result.InsertedID.(int32)), nil
 }
 
 // Find finds the url from the database
 func (m *Mongo) Find(id int) (string, error) {
-	url, ok := m.m[id]
-	if !ok {
-		logger.Error("url not found")
-		return "", errors.New("url not found")
-	}
-	return url, nil
+    var url models.ShortUrl
+    err := m.Collection.FindOne(context.TODO(), bson.M{
+        "_id": id,
+    }).Decode(&url)
+    if err != nil {
+        logger.Error(err.Error())
+        return "", err
+    }
+    return url.Url, nil
 }
